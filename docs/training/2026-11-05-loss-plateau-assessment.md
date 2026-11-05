@@ -52,7 +52,17 @@ Plan acceptance gate (Task 10):
 
 So the fine-tune clearly helped, but it is not yet as good as the gate asks. The plateau does matter.
 
-**A defect in the outputs, unrelated to training:** words are glued together ("from theLondon Fire Brigade", "sofar", "andLaura"). Suspected cause: `no_repeat_ngram_size=3` is a BART-era decoding setting. In Qwen's vocabulary " London" and "London" are different tokens, so when the spaced one would repeat a 3-gram, the ban pushes greedy decoding to the unspaced twin. An A/B on 100 test articles is in the next section.
+**A defect in the outputs, unrelated to training:** words are glued together ("from theLondon Fire Brigade", "sofar", "andLaura"). Suspected cause: `no_repeat_ngram_size=3` is a BART-era decoding setting. In Qwen's vocabulary " London" and "London" are different tokens, so when the spaced one would repeat a 3-gram, the ban pushes greedy decoding to the unspaced twin. An A/B on 100 test articles is below.
+
+### Decoding A/B (fine-tuned v1, first 100 test articles)
+
+| Generation setting | ROUGE-1 | ROUGE-2 | ROUGE-Lsum | Glued words | Avg words |
+|---|---|---|---|---|---|
+| `no_repeat_ngram_size=3` (was the default) | 34.04 | 9.14 | 31.14 | 6 | 40 |
+| no n-gram ban | 39.71 | 18.06 | 36.95 | 0 | 53 |
+| **`repetition_penalty=1.1`** (new default) | **40.01** | 17.78 | 36.94 | 0 | 50 |
+
+The n-gram ban was the cause of the glued words, and it cost about 6 ROUGE-1 and 9 ROUGE-2 points. **Fixed in `src/ytb/prompt.py`:** greedy decoding with `repetition_penalty=1.1`, which scores the same as no ban and still guards against loops on long transcripts. Base and v1 are re-scored on the full 500 articles with it below.
 
 ## Solutions, in order of value per hour
 
