@@ -64,6 +64,18 @@ So the fine-tune clearly helped, but it is not yet as good as the gate asks. The
 
 The n-gram ban was the cause of the glued words, and it cost about 6 ROUGE-1 and 9 ROUGE-2 points. **Fixed in `src/ytb/prompt.py`:** greedy decoding with `repetition_penalty=1.1`, which scores the same as no ban and still guards against loops on long transcripts. Base and v1 are re-scored on the full 500 articles with it below.
 
+### Re-scored with the fixed decoding (same 500 test articles)
+
+| | ROUGE-1 | ROUGE-2 | ROUGE-Lsum |
+|---|---|---|---|
+| Base Qwen3-0.6B | 32.73 | 10.01 | 29.45 |
+| **v1 fine-tune** | **40.06** (+7.33) | **17.84** (+7.83) | **37.35** (+7.90) |
+| Lead-3 baseline | 39.96 | 17.27 | 36.14 |
+
+**The acceptance gate now passes:** v1 beats the base model on all three metrics, and its ROUGE-1 (40.06) is above lead-3 (39.96), not just within 3 points of it.
+
+So most of the earlier shortfall (ROUGE-1 35.02) was the decoding setting, not the training plateau. The training fixes above (smoothing 0, learning-rate sweep) are being tried as v2 against this 40.06.
+
 ## Solutions, in order of value per hour
 
 | # | Change | Why | Cost |
