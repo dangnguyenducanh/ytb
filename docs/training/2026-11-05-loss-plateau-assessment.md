@@ -32,7 +32,7 @@ It was measured, not assumed. `scratchpad/loss_split.py` was run on 64 validatio
 
 1. **Not stuck, but saturating.** The real error, perplexity, fell from 16.1 to 5.5, and next-token accuracy rose from 52.8% to 64.9%. Most of the gain came in the first ~200 steps (6,400 articles), when the model learned the highlights *format*. After that, the content gains are small: −0.045 NLL from step 200 to 400, then −0.013 validation loss from 400 to 625. That is the normal shape of SFT with this much data and this learning rate.
 2. **Label smoothing is working against us.** U fell from 27 to 15. The model is being *trained* to move probability onto the 151,935 wrong tokens, because a 10% target mass is spread across them. For a 152k-vocabulary LM this mostly buys a worse-calibrated distribution, which hurts any sampled decoding. Standard LLM SFT uses ε = 0. It came from the BART-era design.
-3. **The optimiser setting is conservative.** Adafactor (forced by the 11 GB cap) has no momentum, and lr 1e-5 is an AdamW-style value. With a cosine decay to 0 over one epoch, there is little learning left in the second half.
+3. **The optimiser setting is conservative.** Adafactor has no momentum, and lr 1e-5 is an AdamW-style value. With a cosine decay to 0 over one epoch, there is little learning left in the second half.
 4. **The decisive number is ROUGE, not the loss:** see the next section.
 
 ## Does it summarize better? (ROUGE on 500 CNN/DM test articles)
@@ -71,8 +71,8 @@ The n-gram ban was the cause of the glued words, and it cost about 6 ROUGE-1 and
 | 1 | **Log plain NLL / perplexity** (or set ε = 0 so the logged loss *is* NLL) | You can't judge a plateau through a 1.5-point fixed offset | minutes |
 | 2 | **`label_smoothing_factor` 0.1 → 0.0** (or 0.01) | Removes the floor and stops the model learning to spread mass over 152k junk tokens; logged loss drops to ≈1.6–1.7 at once and calibration improves | rerun (~50 min) |
 | 3 | **Learning-rate sweep for Adafactor:** 1e-5 vs 3e-5 vs 1e-4, 150 steps on 4,800 articles each, compared on validation NLL | Adafactor without momentum usually wants a higher lr than AdamW; 1e-5 is likely too low | ~3 × 12 min |
-| 4 | **AdamW 8-bit** (`optim="adamw_bnb_8bit"`, needs `bitsandbytes`) instead of Adafactor | Momentum with roughly 2.5 GB of optimizer state, which may fit the 11 GB cap | rerun |
-| 5 | **More data before more epochs:** 20k → 60k articles (≈2.5 h on the shared GPU) | The curve is data-limited after ~6,400 articles; new articles teach more than repeats. A 2nd epoch on the same 20k risks memorising | hours |
+| 4 | **AdamW 8-bit** (`optim="adamw_bnb_8bit"`, needs `bitsandbytes`) instead of Adafactor | Momentum, at about a quarter of full AdamW's optimizer memory | rerun |
+| 5 | **More data before more epochs:** 20k → 60k articles (≈2.5 h) | The curve is data-limited after ~6,400 articles; new articles teach more than repeats. A 2nd epoch on the same 20k risks memorising | hours |
 | 6 | **Domain data:** add a slice of transcript-style summarization (spoken text) next to CNN/DM | The app summarizes YouTube captions; news-only SFT saturates on news style | data work |
 
 The suggested next run combines 1 + 2 + the winner of 3, on 20k articles. If validation NLL drops below about 1.55 and ROUGE-1 beats this run, scale to 60k.

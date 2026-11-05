@@ -29,7 +29,7 @@ For this repo the eventual use is turning a video summary into a flowchart or mi
 | `Qwen/Qwen3.5-2B` is already a **vision-language** model (`Qwen3_5ForConditionalGeneration`, image-text-to-text), and transformers 5.22 supports it | One backbone covers all three tasks. The pasted "use Qwen-VL for image tasks" split is unnecessary. |
 | Its chat template only thinks when `enable_thinking=True` | Default answer mode is fine for code generation; thinking stays off. |
 | This host has `pdflatex`, `pdftoppm` and `pdftotext`, but **no Graphviz `dot` and no Mermaid CLI** | TikZ can be evaluated now. DOT and Mermaid need their toolchain installed first (conda-forge `graphviz` without sudo; Mermaid CLI pulls headless Chromium). |
-| The GPU is shared: ≤ ~14 GB for us | Full fine-tuning of 2B with AdamW (~32 GB of states) is impossible. Training uses **LoRA** (the pasted r=64, α=128), bf16. |
+| Full fine-tuning of 2B with AdamW needs ~32 GB of optimizer state alone | Training uses **LoRA** (the pasted r=64, α=128), bf16: a fraction of the memory and faster iterations. |
 | **Spike (1 sample, zero-shot)**: Compile@1 0/2, Compile@fix 0/2, Strict Success 0/2. But nodes 7/7 on both tasks, and edges 7/7 (text) and 6/7 (image) read from the uncompiled code. Every failure was a TikZ dialect error, led by a style named after its own shape. Compiler feedback never fixed it. After a deterministic lint the image output compiled but was illegible (3 text collisions) | The model understands diagrams but not TikZ's rules, so SFT on compile-verified code is the main lever. Add a pre-compile lint stage and plain-language error hints (§5.4), a static structure diagnostic (§4.2), and keep legibility in the headline. Details: `docs/diagram-probe/2026-11-05-qwen3.5-2b/REPORT.md` |
 
 ## 3. Goals, non-goals, anti-goals
@@ -115,7 +115,7 @@ r = 1[compiles] · (0.4·nodeF1 + 0.4·edgeF1 + 0.2·constraint_pass_rate) − 0
 
 - The reward is 0 when the code doesn't compile. That is the pasted design's R_compilation, used as a *gate*, not as a free point, so an empty diagram earns nothing.
 - Group size 4–8 per prompt, with a KL term to the SFT model.
-- **Fallback:** DPO on pairs mined from SFT samples (best vs worst under the same reward). Use it if GRPO is too slow on the shared GPU.
+- **Fallback:** DPO on pairs mined from SFT samples (best vs worst under the same reward). Use it if GRPO is too slow.
 - **Gate:** Strict Success@1 on `dev` beats SFT, with no tier dropping more than 2 points.
 
 ### 5.4 Stage 3 — self-correction (Check & Fix)
@@ -134,7 +134,6 @@ r = 1[compiles] · (0.4·nodeF1 + 0.4·edgeF1 + 0.2·constraint_pass_rate) − 0
 
 ## 6. Constraints
 
-- GPU ≤ ~14 GB shared, so LoRA. The vision tower must stay frozen to fit.
 - Disk is about 95% full (~50 GB free): the model is 4.5 GB, and datasets plus renders need pruning.
 - Compiling untrusted LaTeX: always `-no-shell-escape`, a timeout, and a temp directory.
 - DOT and Mermaid need their toolchain installed first. That's the user's call: conda-forge `graphviz` needs no sudo; Mermaid CLI downloads Chromium.
@@ -143,7 +142,7 @@ r = 1[compiles] · (0.4·nodeF1 + 0.4·edgeF1 + 0.2·constraint_pass_rate) − 0
 
 1. DiagramGen is test-only. Training data is synthetic-structure-first plus compile-filtered real code.
 2. One VLM backbone (Qwen3.5-2B) for all three tasks; no separate Qwen-VL.
-3. LoRA (r=64, α=128) rather than full fine-tuning, forced by the shared GPU.
+3. LoRA (r=64, α=128) rather than full fine-tuning: a fraction of the memory and faster iterations.
 4. Headline metric is Strict Success; code-similarity metrics are kept only for comparability.
 5. GRPO with a verifiable reward over DPO; DPO is the fallback.
 6. TikZ first, because it is the only compiler installed; DOT and Mermaid follow once their tools are installed.

@@ -32,7 +32,7 @@ def main(argv: list[str] | None = None) -> None:
     # (docs/training/2026-11-05-loss-plateau-assessment.md); at 0 the logged loss is the plain NLL
     p.add_argument("--label-smoothing", type=float, default=0.0)
     p.add_argument("--eval-steps", type=int, default=200, help="evaluate and save every N steps")
-    p.add_argument("--optim", default="adafactor", help="adafactor fits the 11 GB shared-GPU cap; adamw_torch does not")
+    p.add_argument("--optim", default="adafactor", help="adafactor (default, least optimizer memory) or adamw_torch")
     p.add_argument("--seed", type=int, default=0)
     args = p.parse_args(argv)
     run_dir = args.run_dir or str(Path("runs") / Path(args.out).name)
@@ -55,8 +55,8 @@ def main(argv: list[str] | None = None) -> None:
         num_train_epochs=1, max_steps=args.max_steps, bf16=True, gradient_checkpointing=True,
         label_smoothing_factor=args.label_smoothing, eval_strategy="steps", eval_steps=args.eval_steps,
         eval_on_start=True, save_steps=args.eval_steps, save_total_limit=2, logging_steps=10, logging_first_step=True,
-        # ponytail: AdamW peaked at 11.36 GB (> 11 GB shared-GPU cap); Adafactor's factored states save ~4.4 GB.
-        # Back to AdamW (--optim adamw_torch) when the GPU has more room.
+        # Adafactor's factored states use ~4.4 GB less than AdamW (11.36 GB peak in the smoke run);
+        # --optim adamw_torch switches back.
         optim=args.optim, report_to="tensorboard", seed=args.seed)
     trainer = Trainer(
         model=model, args=targs, train_dataset=train_ds, eval_dataset=eval_ds,

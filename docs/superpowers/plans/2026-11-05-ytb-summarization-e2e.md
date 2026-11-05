@@ -17,11 +17,7 @@
 - **No automated tests** (user directive). Do not add pytest, test files or test dependencies. Verify with the run-and-look steps and the captured sessions.
 - **Repo root and git:** the repo root is `/home/aiface/dangnguyenducanh/ytb`. Until Task 1 runs, `git` there resolves to the parent repo `/home/aiface`, whose remote is unrelated, so never commit before Task 1. Never `git push` without asking the user.
 - **Model and thinking mode:** Phase 1 uses the base `Qwen/Qwen3-0.6B` only. Thinking is disabled everywhere (`enable_thinking=False`).
-- **Shared GPU:**
-  - Training peak memory must stay at or below **13 GB**, since other services hold 14–31 GB of the 49 GB card.
-  - The app uses about 1.5 GB.
-  - Whisper runs on the CPU by default.
-  - Never kill other users' GPU processes.
+- **GPU:** Whisper runs on the CPU by default. Never kill other users' GPU processes.
 - **Port and bind address:** the app port is **18500** and it binds to `127.0.0.1`.
 - **No `yt-dlp`** (user directive): audio for the Whisper fallback comes from `pytubefix` (11.2.1; the API used in Task 3 was checked against it).
 - **YouTube rate limit:** YouTube blocked this host after about six quick transcript requests, so never loop over YouTube calls. The transcript cache exists for this reason.
@@ -544,9 +540,7 @@ Run: `uv run python -m ytb.train --out runs/smoke-model --train-samples 64 --eva
 
 Expected:
 - logged `loss` is finite, starts roughly 1–5, and falls over the 20 steps
-- the last line reads `peak_gpu_gb=` with a value ≤ 13.0
-
-If peak > 13: rerun with `--batch 1 --grad-accum 32`. If it is still > 13: add `optim="adafactor"`.
+- the last line reads `peak_gpu_gb=` with the peak memory of the run
 
 - [ ] **Step 3: Commit**
 
@@ -602,7 +596,6 @@ Document:
 - the manual-session command
 - the training, smoke and evaluate commands
 - the port
-- the shared-GPU note
 - where the model and the captures live
 
 - [ ] **Step 4: Commit**

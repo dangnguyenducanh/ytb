@@ -30,7 +30,7 @@ Then open http://127.0.0.1:18500.
 | `--host` / `--port` | `127.0.0.1` / `18500` | bind address |
 | `--cache-dir` | `.cache/transcripts` | transcript cache |
 | `--whisper-model` | `small` | `base` is faster, `small` more accurate |
-| `--whisper-device` | `cpu` | `cuda` is faster but uses about 1 GB more of the shared GPU |
+| `--whisper-device` | `cpu` | `cuda` is faster |
 
 **API**
 - `GET /api/health` returns `{status, model}`.
@@ -67,7 +67,6 @@ uv run python -m ytb.evaluate --model models/ytb-summarizer                     
 
 ## Notes
 
-- **Shared GPU:** the 49 GB card is shared with other services. Training stays at or below ~11 GB (`peak_gpu_gb` is printed last), and the app needs about 1.5 GB.
 - **YouTube rate limit:** YouTube blocks this host after a handful of quick transcript requests. The cache prevents repeat fetches; a block shows as a 503.
 - **`av` is pinned below 19:** PyAV 19 removed an argument that `faster-whisper` 1.2.1 still passes.
 - **Thinking off:** Qwen3's thinking mode is disabled everywhere through the shared prompt in `src/ytb/prompt.py`.

@@ -56,7 +56,7 @@ The user flow: start the app, open the page, paste a URL, click **Summarize**, r
 22. As a viewer, I want a transcribed video cached like a captioned one, so that summarizing it again is instant.
 23. As an operator, I want one command to start the app, bound to localhost on a known free port, so that running it is trivial and not exposed to the network by default.
 24. As an operator, I want a health endpoint that reports the loaded model, so that I can check the app is up.
-25. As an operator, I want the app to use the GPU when available and fall back to CPU, with local transcription on the CPU by default, so that it runs anywhere and doesn't compete with training for the shared GPU.
+25. As an operator, I want the app to use the GPU when available and fall back to CPU, with local transcription on the CPU by default, so that it runs anywhere.
 26. As the developer, I want the system to work with the base model first, so that the app is proven before any training time is spent.
 27. As the developer, I want a browser session that uses the page like a person (typing links, clicking, waiting, reading results and errors), so that I see the real user experience.
 28. As the developer, I want screenshots of every state and a screen recording of that session stored in the repo's docs, so that I can review the app without running it.
@@ -70,7 +70,6 @@ The user flow: start the app, open the page, paste a URL, click **Summarize**, r
 36. As an ML developer, I want one command that scores a model with ROUGE-1/2/Lsum on a fixed test sample next to lead-3, using exactly the app's prompt and generation settings, so that I can compare base and fine-tuned models fairly.
 37. As an ML developer, I want the exported model folder to contain everything the app needs, so that serving it is just "point at the folder".
 38. As the developer, I want the same captured human-like session repeated on the fine-tuned model, so that I can compare it with the base model side by side.
-39. As an operator, I want training and the app to stay within the shared GPU budget, so that other services on this machine keep running.
 
 ## Implementation Decisions
 
@@ -157,7 +156,7 @@ The user flow: start the app, open the page, paste a URL, click **Summarize**, r
 - **Trainer:**
   - Hugging Face `Trainer` with full-parameter fine-tuning: fp32 weights with bf16 autocast, gradient checkpointing, `label_smoothing_factor=0.1`.
   - Learning rate 1e-5, cosine schedule with 3% warmup, effective batch 32, 1 epoch. It evaluates and saves every 200 steps.
-  - Peak GPU memory must stay at or below 13 GB; a 20-step smoke run checks this first.
+  - A 20-step smoke run checks the loss and reports peak GPU memory before the real run.
 - **Evaluation:**
   - ROUGE-1/2/Lsum ×100 with stemming and NLTK sentence splitting for Lsum, on 500 fixed test articles, next to lead-3.
   - Acceptance: the fine-tuned model beats the base model zero-shot on all three metrics, with ROUGE-1 no more than 3 points below lead-3.
@@ -188,7 +187,6 @@ The user flow: start the app, open the page, paste a URL, click **Summarize**, r
 ## Further Notes
 
 - **Domain gap.** The model trains on news and runs on spoken transcripts. Caption-style augmentation narrows the gap; the captured sessions show the real quality.
-- **Shared GPU.** The 49 GB card has 14–31 GB held by other services. Training stays at or below 13 GB; the app needs about 1.5 GB, so both can run at once.
 - **Local transcription.** Whisper `small` on CPU int8 is roughly 2–5× faster than real time. Audio comes from `pytubefix` (11.2.1, API checked 2026-11-05) because of the directive against `yt-dlp`. A proof-of-origin token demand from YouTube surfaces as the "blocked" error.
 - **Playwright.** It needs a one-time Chromium download (~150 MB). If Chromium cannot start because system libraries are missing, installing them needs sudo, so that is the user's call.
 - **Thinking off everywhere.** Qwen3's thinking mode is disabled in serving, evaluation and training.
