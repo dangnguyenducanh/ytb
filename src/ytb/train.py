@@ -37,7 +37,7 @@ def main(argv: list[str] | None = None) -> None:
     args = p.parse_args(argv)
     run_dir = args.run_dir or str(Path("runs") / Path(args.out).name)
     sys.stdout.reconfigure(line_buffering=True)  # loss lines reach a redirected log (tail -f) as they happen
-    # shared GPU: variable-length batches fragment the cache; keep reserved memory close to allocated
+    # variable-length batches fragment the CUDA cache; keep reserved memory close to allocated
     os.environ.setdefault("PYTORCH_CUDA_ALLOC_CONF", "expandable_segments:True")
 
     tok = AutoTokenizer.from_pretrained(BASE_MODEL)
