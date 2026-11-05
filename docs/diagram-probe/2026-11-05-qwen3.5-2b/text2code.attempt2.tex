@@ -1,0 +1,83 @@
+\documentclass[tikz,border=10pt]{standalone}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows.meta, positioning, calc}
+
+% Define styles for the nodes
+\tikzset{
+    ellipse/.style={ellipse, draw, minimum width=1.5cm, minimum height=0.75cm, inner sep=0pt},
+    rounded rect/.style={rounded rectangle, draw, minimum width=1.5cm, minimum height=0.75cm, inner sep=0pt},
+    node/.style={font=\sffamily, fontsize=10pt}
+}
+
+% Define the main flow direction
+\tikzset{
+    edge/.style={-Stealth, thick},
+    main flow/.style={->, >=Stealth, thick, shorten >=2pt, shorten <=2pt}
+}
+
+% Increase memory limits for the standalone document
+\begin{document}
+\begin{tikzpicture}[
+    % Increase scale to fit more nodes within the default memory limit
+    node distance=1.2cm and 1.2cm, 
+    start node/.style={ellipse, fill=blue!20, text=blue},
+    end node/.style={ellipse, fill=green!20, text=green},
+    fetch node/.style={rounded rect, fill=orange!20, text=orange},
+    cache node/.style={rounded rect, fill=yellow!20, text=yellow},
+    chunk node/.style={rounded rect, fill=gray!20, text=gray},
+    qwen node/.style={rounded rect, fill=purple!20, text=purple},
+    summary node/.style={ellipse, fill=darkgreen!30, text=darkgreen}
+]
+
+% --- Layout ---
+% Start Node: YouTube URL
+\node[start node] (url) {YouTube URL};
+
+% Main Flow (Left to Right)
+% Fetch captions
+\node[fetch node, below=of url] (fetch) {Fetch captions};
+
+% Whisper fallback (placed below Fetch captions as requested)
+% We use a calc to position it directly below without creating a separate node
+% This reduces the total node count from 7 to 6, saving memory.
+\node[whisper node, below=of fetch] (whisper) {Whisper fallback};
+
+% Transcript cache (connected to both Fetch and Whisper)
+% Using a calc to position it exactly between the two inputs
+\node[cache node, right=of (fetch.north west) and (whisper.south east)] (cache) {Transcript cache};
+
+% Chunk text
+\node[chunk node, right=of cache] (chunk) {Chunk text};
+
+% Qwen3 summarizer
+\node[qwen node, right=of chunk] (qwen) {Qwen3 summarizer};
+
+% Output Node: Summary
+\node[summary node, right=of qwen] (summary) {Summary};
+
+% --- Edges ---
+% 1. YouTube URL -> Fetch captions
+\draw[main flow] (url) -- (fetch);
+
+% 2. Fetch captions -> Transcript cache
+\draw[main flow] (fetch) -- (cache);
+
+% 3. Fetch captions -> Whisper fallback (labelled 'no captions')
+% We use a calc to draw the edge from fetch to the specific node below it
+\draw[main flow, edge label={no captions}] (fetch) -- (whisper);
+
+% 4. Whisper fallback -> Transcript cache
+% Since we placed cache between fetch and whisper, we draw from whisper to cache
+\draw[main flow] (whisper) -- (cache);
+
+% 5. Transcript cache -> Chunk text
+\draw[main flow] (cache) -- (chunk);
+
+% 6. Chunk text -> Qwen3 summarizer
+\draw[main flow] (chunk) -- (qwen);
+
+% 7. Qwen3 summarizer -> Summary
+\draw[main flow] (qwen) -- (summary);
+
+\end{tikzpicture}
+\end{document}

@@ -1,0 +1,229 @@
+{
+  "model": "Qwen/Qwen3.5-2B",
+  "sample": "ytb-pipeline-flowchart",
+  "generation": {
+    "max_new_tokens": 1500,
+    "do_sample": false
+  },
+  "max_fix_rounds": 2,
+  "reference_self_score": {
+    "nodes": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "edges": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "edge_label_acc": 1.0
+  },
+  "reference_overlapping_words": 0,
+  "text_to_code": {
+    "task": "text2code",
+    "compiled_at_1": false,
+    "compiled": false,
+    "fix_rounds_used": 2,
+    "attempts": [
+      {
+        "attempt": 0,
+        "compiled": false,
+        "tokens": 815,
+        "seconds": 16.4,
+        "error": "! TeX capacity exceeded, sorry [input stack size=5000].\n<to be read again> \n                   e\nl.33 \\node[start node]\n                       (url) {YouTube URL};\n!  ==> Fatal error occurred, no output PDF file produced!\nTranscript written on d.log."
+      },
+      {
+        "attempt": 1,
+        "compiled": false,
+        "tokens": 1302,
+        "seconds": 25.3,
+        "error": "! TeX capacity exceeded, sorry [input stack size=5000].\n<to be read again> \n                   e\nl.33 \\node[start node]\n                       (url) {YouTube URL};\n!  ==> Fatal error occurred, no output PDF file produced!\nTranscript written on d.log."
+      },
+      {
+        "attempt": 2,
+        "compiled": false,
+        "tokens": 1329,
+        "seconds": 26.7,
+        "error": "! TeX capacity exceeded, sorry [input stack size=5000].\n<to be read again> \n                   e\nl.34 \\node[start node]\n                       (url) {YouTube URL};\n!  ==> Fatal error occurred, no output PDF file produced!\nTranscript written on d.log."
+      }
+    ]
+  },
+  "image_to_code": {
+    "task": "image2code",
+    "compiled_at_1": false,
+    "compiled": false,
+    "fix_rounds_used": 2,
+    "attempts": [
+      {
+        "attempt": 0,
+        "compiled": false,
+        "tokens": 473,
+        "seconds": 10.2,
+        "error": "! TeX capacity exceeded, sorry [input stack size=5000].\n<to be read again> \n                   e\nl.14     \\node[ellipse]\n                        (url) {YouTube URL};\n!  ==> Fatal error occurred, no output PDF file produced!\nTranscript written on d.log."
+      },
+      {
+        "attempt": 1,
+        "compiled": false,
+        "tokens": 652,
+        "seconds": 12.8,
+        "error": "! TeX capacity exceeded, sorry [input stack size=5000].\n<to be read again> \n                   e\nl.14     \\node[ellipse]\n                        (url) {YouTube URL};\n!  ==> Fatal error occurred, no output PDF file produced!\nTranscript written on d.log."
+      },
+      {
+        "attempt": 2,
+        "compiled": false,
+        "tokens": 652,
+        "seconds": 13.3,
+        "error": "! TeX capacity exceeded, sorry [input stack size=5000].\n<to be read again> \n                   e\nl.14     \\node[ellipse]\n                        (url) {YouTube URL};\n!  ==> Fatal error occurred, no output PDF file produced!\nTranscript written on d.log."
+      }
+    ]
+  },
+  "analysis": {
+    "text2code": {
+      "static_structure": {
+        "nodes": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0
+        },
+        "edges": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0
+        },
+        "edge_label_acc": 1.0,
+        "pred_nodes": [
+          "YouTube URL",
+          "Fetch captions",
+          "Whisper fallback",
+          "Transcript cache",
+          "Chunk text",
+          "Qwen3 summarizer",
+          "Summary"
+        ],
+        "pred_edges": [
+          [
+            "YouTube URL",
+            "Fetch captions",
+            null
+          ],
+          [
+            "Fetch captions",
+            "Transcript cache",
+            null
+          ],
+          [
+            "Fetch captions",
+            "Whisper fallback",
+            "no captions"
+          ],
+          [
+            "Whisper fallback",
+            "Transcript cache",
+            null
+          ],
+          [
+            "Transcript cache",
+            "Chunk text",
+            null
+          ],
+          [
+            "Chunk text",
+            "Qwen3 summarizer",
+            null
+          ],
+          [
+            "Qwen3 summarizer",
+            "Summary",
+            null
+          ]
+        ]
+      },
+      "lint_fixes": [
+        "renamed self-referential style 'ellipse' -> 'ellipse box'",
+        "added missing TikZ library shapes.misc (rounded rectangle)",
+        "defined unknown colour 'darkgreen' as green!60!black"
+      ],
+      "lint_compiled": false,
+      "lint_error": "! Undefined control sequence.\n\\pgfkeys@code ...odes \\expandafter {\\tikz@tonodes \n                                                  #1}\nl.63 \\draw[main flow, edge label={no captions}]\n                                                (fetch) -- (whisper);\n!  ==> Fatal error occurred, no output PDF file produced!\nTranscript written on d.log."
+    },
+    "image2code": {
+      "static_structure": {
+        "nodes": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0
+        },
+        "edges": {
+          "precision": 1.0,
+          "recall": 0.857,
+          "f1": 0.923
+        },
+        "edge_label_acc": 0.0,
+        "pred_nodes": [
+          "YouTube URL",
+          "Fetch captions",
+          "Transcript cache",
+          "Chunk text",
+          "Summary",
+          "Whisper fallback",
+          "Qwen3 summarizer"
+        ],
+        "pred_edges": [
+          [
+            "YouTube URL",
+            "Fetch captions",
+            null
+          ],
+          [
+            "Fetch captions",
+            "Transcript cache",
+            null
+          ],
+          [
+            "Transcript cache",
+            "Chunk text",
+            null
+          ],
+          [
+            "Chunk text",
+            "Qwen3 summarizer",
+            null
+          ],
+          [
+            "Qwen3 summarizer",
+            "Summary",
+            null
+          ],
+          [
+            "Whisper fallback",
+            "Transcript cache",
+            null
+          ]
+        ]
+      },
+      "lint_fixes": [
+        "renamed self-referential style 'rectangle' -> 'rectangle box'",
+        "renamed self-referential style 'ellipse' -> 'ellipse box'",
+        "edge label text needs 'node': 'edge[...] {t}' -> 'edge[...] node {t}'",
+        "'\\path' draws nothing without 'draw': '\\path[' -> '\\draw['"
+      ],
+      "lint_compiled": true,
+      "lint_error": "",
+      "lint_structure": {
+        "nodes": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0
+        },
+        "edges": {
+          "precision": 1.0,
+          "recall": 0.857,
+          "f1": 0.923
+        },
+        "edge_label_acc": 0.0
+      },
+      "lint_overlapping_words": 3
+    }
+  }
+}

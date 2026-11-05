@@ -1,0 +1,32 @@
+\documentclass[border=5pt]{standalone}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows.meta, positioning}
+
+\begin{document}
+\begin{tikzpicture}[
+    node distance=0.8cm,
+    ellipse/.style={ellipse, draw, fill=green!20, minimum width=1.2cm, minimum height=0.6cm},
+    rectangle/.style={rectangle, draw, fill=blue!20, minimum height=0.8cm, minimum width=1.2cm},
+    edge label/.style={font=\small, align=center, xshift=0.3cm, yshift=-0.3cm},
+    edge arrow/.style={-Stealth, thick}
+]
+    % Nodes
+    \node[ellipse] (url) {YouTube URL};
+    \node[rectangle] (fetch) [right of=url] {Fetch captions};
+    \node[rectangle] (cache) [right of=fetch] {Transcript cache};
+    \node[rectangle] (chunk) [right of=cache] {Chunk text};
+    \node[ellipse] (summary) [right of=chunk] {Summary};
+    \node[rectangle] (whisper) [below of=fetch, yshift=-0.3cm] {Whisper fallback};
+    \node[rectangle] (qwen) [below of=chunk, yshift=-0.3cm] {Qwen3 summarizer};
+
+    % Edges
+    \path[edge arrow] (url) -- (fetch);
+    \path[edge arrow] (fetch) -- (cache);
+    \path[edge arrow] (cache) -- (chunk);
+    \path[edge arrow] (chunk) -- (qwen);
+    \path[edge arrow] (qwen) -- (summary);
+    \path[edge arrow] (whisper) -- (cache);
+    \path[edge arrow] (whisper) edge[edge label] {no captions} (cache);
+
+\end{tikzpicture}
+\end{document}

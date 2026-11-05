@@ -1,0 +1,15 @@
+{
+  "id": "ytb-pipeline-flowchart",
+  "note": "Hand-made sample in DiagramGen's text-to-diagram style (the official OpenRaiser/DiagramGen files are gated for this HF account). Ground truth is exact because the reference was written from this structure.",
+  "instruction": "Create a flowchart in LaTeX TikZ for a YouTube summarization pipeline. It has seven nodes: 'YouTube URL' and 'Summary' are ellipses (input and output); 'Fetch captions', 'Whisper fallback', 'Transcript cache', 'Chunk text' and 'Qwen3 summarizer' are rounded rectangles. Directed edges: YouTube URL -> Fetch captions; Fetch captions -> Transcript cache; Fetch captions -> Whisper fallback, labelled 'no captions'; Whisper fallback -> Transcript cache; Transcript cache -> Chunk text; Chunk text -> Qwen3 summarizer; Qwen3 summarizer -> Summary. The main flow runs left to right; place Whisper fallback below Fetch captions. Return one complete, compilable standalone LaTeX document.",
+  "nodes": ["YouTube URL", "Fetch captions", "Whisper fallback", "Transcript cache", "Chunk text", "Qwen3 summarizer", "Summary"],
+  "edges": [
+    ["YouTube URL", "Fetch captions", null],
+    ["Fetch captions", "Transcript cache", null],
+    ["Fetch captions", "Whisper fallback", "no captions"],
+    ["Whisper fallback", "Transcript cache", null],
+    ["Transcript cache", "Chunk text", null],
+    ["Chunk text", "Qwen3 summarizer", null],
+    ["Qwen3 summarizer", "Summary", null]
+  ]
+}
