@@ -7,6 +7,7 @@ uv run python -m ytb.train --out DIR [--run-dir DIR] [--train-samples 20000] [--
 import argparse
 import json
 import os
+import sys
 from pathlib import Path
 
 import torch
@@ -30,6 +31,7 @@ def main(argv: list[str] | None = None) -> None:
     p.add_argument("--seed", type=int, default=0)
     args = p.parse_args(argv)
     run_dir = args.run_dir or str(Path("runs") / Path(args.out).name)
+    sys.stdout.reconfigure(line_buffering=True)  # loss lines reach a redirected log (tail -f) as they happen
     # shared GPU: variable-length batches fragment the cache; keep reserved memory close to allocated
     os.environ.setdefault("PYTORCH_CUDA_ALLOC_CONF", "expandable_segments:True")
 
