@@ -100,6 +100,8 @@ Results on the same 500 test articles with the fixed decoding:
 | v2 (smoothing 0, lr 3e-5) | 39.77 | 17.52 | 37.07 | **1.628** |
 | Lead-3 | 39.96 | 17.27 | 36.14 | — |
 
+![v1 vs v2 loss: logged training loss (left) and plain validation error (right)](2026-11-05-loss-curves.png)
+
 ## Conclusion
 
 - **v2 has the lower error but no better summaries.** Its ROUGE is 0.3 below v1 on every metric, which is inside the noise for 500 articles (about ±0.5).
