@@ -74,7 +74,39 @@ The n-gram ban was the cause of the glued words, and it cost about 6 ROUGE-1 and
 
 **The acceptance gate now passes:** v1 beats the base model on all three metrics, and its ROUGE-1 (40.06) is above lead-3 (39.96), not just within 3 points of it.
 
-So most of the earlier shortfall (ROUGE-1 35.02) was the decoding setting, not the training plateau. The training fixes above (smoothing 0, learning-rate sweep) are being tried as v2 against this 40.06.
+So most of the earlier shortfall (ROUGE-1 35.02) was the decoding setting, not the training plateau.
+
+## The rerun: v2 with solutions 1 + 2 + 3 applied
+
+- **Learning-rate sweep** with label smoothing 0 (150 steps on 4,800 articles; the validation loss is the plain error):
+
+  | Learning rate | Step 0 | Step 50 | Step 100 | Step 150 |
+  |---|---|---|---|---|
+  | 1e-5 | 2.922 | 1.804 | 1.759 | 1.750 |
+  | **3e-5** | 2.922 | 1.834 | 1.759 | **1.737** |
+  | 1e-4 | 2.922 | 2.069 | 1.873 | 1.813 |
+
+- **v2:** `--lr 3e-5 --label-smoothing 0 --batch 4 --grad-accum 8` (effective batch 32), the same 20k articles, 1 epoch, Adafactor.
+  - It took 43.5 min, with peak 14.2 GB in PyTorch.
+  - Validation error went 2.838 → 1.725 → 1.657 → **1.628**.
+  - Progress log: [2026-11-05-ytb-summarizer-v2-progress.md](2026-11-05-ytb-summarizer-v2-progress.md).
+
+Results on the same 500 test articles with the fixed decoding:
+
+| | ROUGE-1 | ROUGE-2 | ROUGE-Lsum | Validation error (plain) |
+|---|---|---|---|---|
+| Base | 32.73 | 10.01 | 29.45 | 2.84 |
+| **v1** (smoothing 0.1, lr 1e-5) | **40.06** | **17.84** | **37.35** | ≈1.70 |
+| v2 (smoothing 0, lr 3e-5) | 39.77 | 17.52 | 37.07 | **1.628** |
+| Lead-3 | 39.96 | 17.27 | 36.14 | — |
+
+## Conclusion
+
+- **v2 has the lower error but no better summaries.** Its ROUGE is 0.3 below v1 on every metric, which is inside the noise for 500 articles (about ±0.5).
+- **The scale-up rule isn't met.** It required validation error < 1.55 *and* a better ROUGE-1, so going to 60k articles would not be justified by these numbers.
+- **What actually limited quality was decoding, not the loss plateau.** Removing the n-gram ban gave about +5 ROUGE-1 / +8 ROUGE-2.
+- **Served model: v1** (`models/ytb-summarizer`). v2 stays available with `--model models/ytb-summarizer-v2`; it is better calibrated, which matters if sampling is ever turned on.
+- **The next real gain is likely data, not optimisation** (solution 6): the app summarizes spoken transcripts, and both models only saw news.
 
 ## Solutions, in order of value per hour
 

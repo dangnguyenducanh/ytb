@@ -1,0 +1,42 @@
+[
+  {
+    "scenario": "02-captions",
+    "input": "https://www.youtube.com/watch?v=arj7oStGLkU",
+    "client_seconds": 3.35,
+    "summary": "Tim Urban wrote a 90-page paper comparing his brain to a non-procrastinator's. He found an MRI lab to compare his brain to a non-procrastinator's. The instant gratification monkey doesn't care about the future, he only cares about easy and fun things. The rational decision-maker knows the future, but he wants to do things that make sense to him right now.",
+    "stats": "Video\narj7oStGLkU\nLanguage\nEnglish\nSource\ncaptions\nParts\n4\nTokens\n2,898 in → 80 out\nServer time\n3.1 s\nModel\nytb-summarizer (fine-tuned)",
+    "error": ""
+  },
+  {
+    "scenario": "03-cached",
+    "input": "https://youtu.be/arj7oStGLkU",
+    "client_seconds": 2.83,
+    "summary": "Tim Urban wrote a 90-page paper comparing his brain to a non-procrastinator's. He found an MRI lab to compare his brain to a non-procrastinator's. The instant gratification monkey doesn't care about the future, he only cares about easy and fun things. The rational decision-maker knows the future, but he wants to do things that make sense to him right now.",
+    "stats": "Video\narj7oStGLkU\nLanguage\nEnglish\nSource\ncaptions\nParts\n4\nTokens\n2,898 in → 80 out\nServer time\n2.8 s\nModel\nytb-summarizer (fine-tuned)",
+    "error": ""
+  },
+  {
+    "scenario": "04-long",
+    "input": "https://www.youtube.com/watch?v=zjkBMFhNj_g",
+    "client_seconds": 8.85,
+    "summary": "Llama 270B is an open-source model, so we know quite a bit about how it was trained. The training process involves taking a chunk of the internet and compressing it into a zip file. This is essentially a compression of the internet into a single parameter. The neural network is used to predict the next word in a sequence.",
+    "stats": "Video\nzjkBMFhNj_g\nLanguage\nEnglish\nSource\ncaptions\nParts\n14\nTokens\n12,944 in → 71 out\nServer time\n8.8 s\nModel\nytb-summarizer (fine-tuned)",
+    "error": ""
+  },
+  {
+    "scenario": "05-invalid",
+    "input": "https://vimeo.com/123",
+    "client_seconds": 1.55,
+    "summary": "",
+    "stats": "",
+    "error": "Check the link or text: That is not a YouTube video link.\n\nRetry"
+  },
+  {
+    "scenario": "06-text",
+    "input": "The city of Riverton will replace its entire diesel bus fleet with electric buse…",
+    "client_seconds": 1.54,
+    "summary": "Riverton will replace all its diesel buses with electric ones by 2028. The plan includes new charging depots at three existing garages. The switch will cut the fleet's carbon emissions by about 60 percent.",
+    "stats": "Video\n—\nLanguage\n—\nSource\npasted text\nParts\n1\nTokens\n168 in → 48 out\nServer time\n0.6 s\nModel\nytb-summarizer (fine-tuned)",
+    "error": ""
+  }
+]
