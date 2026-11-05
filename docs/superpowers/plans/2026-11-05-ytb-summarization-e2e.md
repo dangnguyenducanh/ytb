@@ -371,7 +371,7 @@ Open each PNG and check `runs/app.log`.
 |---|---|
 | 01 | Header shows `Qwen/Qwen3-0.6B`; URL field and button visible; nothing overlaps or overflows |
 | 02 | `waiting` shot: button disabled and timer running; `done` shot: 3–4 English sentences about the talk; stats show `en`, `captions`, seconds |
-| 03 | `client_seconds` in `session.json` is far below 02's; app log shows `cache hit arj7oStGLkU` and no new fetch |
+| 03 | App log shows `cache hit arj7oStGLkU` and no second `fetch arj7oStGLkU`. Only the transcript is cached, so the summary is regenerated and the time is similar to 02's. |
 | 04 | Finishes; `chunks` > 1; the summary is about the talk as a whole |
 | 05 | Plain-language "Check the link or text" message; no raw JSON or stack trace; button enabled again |
 | 06 | Summary of the pasted paragraph; source shows `—` |
