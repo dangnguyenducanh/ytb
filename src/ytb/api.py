@@ -2,6 +2,7 @@
 
 import argparse
 import functools
+import json
 import logging
 from collections.abc import Callable
 from pathlib import Path
@@ -38,6 +39,8 @@ class SummarizeRequest(BaseModel):
 def create_app(summarizer: Summarizer, fetch: Callable[[str], Transcript], model_name: str) -> FastAPI:
     app = FastAPI(title="ytb")
     app.mount("/static", StaticFiles(directory=_PAGE.parent), name="static")  # compiled TS bundle, CSS, fonts
+    eval_report = Path(model_name) / "eval.json"  # written by `python -m ytb.evaluate --model <dir>`
+    rouge = json.loads(eval_report.read_text()).get("scores") if eval_report.is_file() else None
 
     @app.get("/")
     def index():
@@ -45,7 +48,7 @@ def create_app(summarizer: Summarizer, fetch: Callable[[str], Transcript], model
 
     @app.get("/api/health")
     def health():
-        return {"status": "ok", "model": model_name}
+        return {"status": "ok", "model": model_name, "rouge": rouge}
 
     @app.post("/api/summarize")
     def summarize(req: SummarizeRequest):

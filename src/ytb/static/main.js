@@ -325,10 +325,29 @@ el("clear").addEventListener("click", () => {
     renderDetails(null);
     show("empty");
 });
+function renderHealth(hh) {
+    const chip = el("model-chip");
+    const score = el("model-score");
+    if (!hh?.model) {
+        chip.dataset.state = "offline";
+        el("model").textContent = "backend offline";
+        el("model-kind").textContent = "";
+        score.hidden = true;
+        return;
+    }
+    chip.dataset.state = hh.status === "ok" ? "ready" : "loading";
+    const last = hh.model.split("/").filter(Boolean).pop() ?? hh.model;
+    el("model").textContent = last;
+    el("model-kind").textContent = isBase(hh.model) ? "base" : "fine-tuned";
+    const r1 = hh.rouge?.rouge1;
+    score.hidden = typeof r1 !== "number";
+    if (typeof r1 === "number")
+        score.textContent = `ROUGE-1 ${r1.toFixed(1)}`;
+}
 fetch("/api/health")
     .then((r) => r.json())
-    .then((hh) => { el("model").textContent = hh.model ? modelName(hh.model) : "unknown"; })
-    .catch(() => { el("model").textContent = "backend offline"; });
+    .then(renderHealth)
+    .catch(() => renderHealth(null));
 // ---------- first paint ----------
 renderAll();
 const latest = runs[0];

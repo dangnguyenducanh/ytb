@@ -11,17 +11,28 @@
 </head>
 <body>
 <header class="topbar">
-  <a class="brand" href="/">
-    <!-- the mark: a play triangle becoming lines of text (video in, summary out) -->
-    <svg class="mark" viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M2 5.5v13l9-6.5z" fill="currentColor"/>
-      <rect x="13" y="6" width="9" height="2.4" rx="1.2" fill="currentColor"/>
-      <rect x="13" y="10.8" width="9" height="2.4" rx="1.2" fill="currentColor"/>
-      <rect x="13" y="15.6" width="6" height="2.4" rx="1.2" fill="currentColor"/>
-    </svg>
-    <span>ytb</span>
-  </a>
-  <span class="scope">Summaries <span aria-hidden="true">/</span> <span id="model">loading…</span></span>
+  <div class="topbar-left">
+    <a class="brand" href="/" aria-label="ytb, home">
+      <!-- the mark: a play triangle becoming lines of text (video in, summary out) -->
+      <svg class="mark" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M2 5.5v13l9-6.5z" fill="currentColor"/>
+        <rect x="13" y="6" width="9" height="2.4" rx="1.2" fill="currentColor"/>
+        <rect x="13" y="10.8" width="9" height="2.4" rx="1.2" fill="currentColor"/>
+        <rect x="13" y="15.6" width="6" height="2.4" rx="1.2" fill="currentColor"/>
+      </svg>
+      <span class="wordmark">ytb</span>
+    </a>
+    <span class="crumb">Summaries</span>
+  </div>
+  <div class="topbar-right">
+    <div id="model-chip" class="model-chip" data-state="loading" title="The model serving this page">
+      <span class="dot" aria-hidden="true"></span>
+      <span id="model">loading…</span>
+      <span id="model-kind" class="chip-meta"></span>
+      <span id="model-score" class="chip-meta chip-score num" hidden></span>
+    </div>
+    <a class="top-link" href="/docs" target="_blank" rel="noopener">API</a>
+  </div>
 </header>
 
 <main class="sheet">
