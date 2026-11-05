@@ -8,3 +8,5 @@ runs/
 .ruff_cache/
 .taste-skill/
 frontend/node_modules/
+autoresearch/results.tsv
+autoresearch/run.log
