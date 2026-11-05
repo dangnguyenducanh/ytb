@@ -6,3 +6,5 @@ runs/
 .cache/
 .claude/
 .ruff_cache/
+.taste-skill/
+frontend/node_modules/

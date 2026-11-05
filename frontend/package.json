@@ -1,0 +1,13 @@
+{
+  "name": "ytb-frontend",
+  "private": true,
+  "type": "module",
+  "description": "TypeScript source of the ytb page; `npm run build` writes ../src/ytb/static/main.js",
+  "scripts": {
+    "build": "tsc -p .",
+    "check": "tsc -p . --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "7.0.2"
+  }
+}

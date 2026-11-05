@@ -80,6 +80,8 @@ def main(argv: list[str] | None = None) -> None:
     p.add_argument("--base-url", default="http://127.0.0.1:18500")
     p.add_argument("--out", required=True)
     p.add_argument("--no-captions-url", default=None)
+    p.add_argument("--storage", default=None,
+                   help="browser storage JSON: loaded before the session if it exists, saved after (keeps the page's run history)")
     a = p.parse_args(argv)
     out = Path(a.out)
     out.mkdir(parents=True, exist_ok=True)
@@ -89,7 +91,9 @@ def main(argv: list[str] | None = None) -> None:
     with sync_playwright() as pw:
         browser = pw.chromium.launch()
         size = {"width": 1280, "height": 860}
-        ctx = browser.new_context(viewport=size, record_video_dir=str(out / "_video"), record_video_size=size)
+        state = a.storage if a.storage and Path(a.storage).exists() else None
+        ctx = browser.new_context(viewport=size, record_video_dir=str(out / "_video"), record_video_size=size,
+                                  storage_state=state)
         page = ctx.new_page()
         _open(page, a.base_url)
         page.screenshot(path=out / "01-home.png")
@@ -98,6 +102,8 @@ def main(argv: list[str] | None = None) -> None:
             log.append(entry)
             print(json.dumps(entry, ensure_ascii=False)[:300], flush=True)
         video = Path(page.video.path())
+        if a.storage:
+            ctx.storage_state(path=a.storage)
         ctx.close()  # finalizes the video
         browser.close()
     shutil.move(video, out / "session.webm")

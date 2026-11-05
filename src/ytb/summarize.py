@@ -13,6 +13,8 @@ class Summary:
     input_tokens: int
     output_tokens: int
     seconds: float
+    chunk_tokens: list[int]  # token count of each first-round window (one entry when it fit in one pass)
+    rounds: int  # combine rounds used (0 = single pass)
 
 
 class Summarizer:
@@ -51,12 +53,14 @@ class Summarizer:
             t0 = time.perf_counter()
             ids = self._encode(text)
             input_tokens, chunks, rounds = len(ids), 1, 0
+            chunk_tokens = [input_tokens]
             while len(ids) > self.max_input_tokens and rounds < self.max_rounds:
                 windows = self._windows(ids)
                 if rounds == 0:
-                    chunks = len(windows)
+                    chunks, chunk_tokens = len(windows), [len(w) for w in windows]
                 ids = self._encode("\n".join(self.generate(self._decode(w)) for w in windows))
                 rounds += 1
             final_input = text if rounds == 0 and len(ids) <= self.max_input_tokens else self._decode(ids[: self.max_input_tokens])
             summary = self.generate(final_input)
-            return Summary(summary, chunks, input_tokens, len(self._encode(summary)), round(time.perf_counter() - t0, 2))
+            return Summary(summary, chunks, input_tokens, len(self._encode(summary)),
+                           round(time.perf_counter() - t0, 2), chunk_tokens, rounds)

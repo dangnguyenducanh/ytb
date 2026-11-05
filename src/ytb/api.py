@@ -9,6 +9,7 @@ from pathlib import Path
 import uvicorn
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from ytb.summarize import Summarizer
@@ -36,6 +37,7 @@ class SummarizeRequest(BaseModel):
 
 def create_app(summarizer: Summarizer, fetch: Callable[[str], Transcript], model_name: str) -> FastAPI:
     app = FastAPI(title="ytb")
+    app.mount("/static", StaticFiles(directory=_PAGE.parent), name="static")  # compiled TS bundle, CSS, fonts
 
     @app.get("/")
     def index():
@@ -66,6 +68,8 @@ def create_app(summarizer: Summarizer, fetch: Callable[[str], Transcript], model
             "language": transcript.language if transcript else None,
             "source": transcript.source if transcript else None,
             "chunks": s.chunks,
+            "chunk_tokens": s.chunk_tokens,
+            "rounds": s.rounds,
             "input_tokens": s.input_tokens,
             "output_tokens": s.output_tokens,
             "seconds": s.seconds,
