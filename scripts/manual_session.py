@@ -40,7 +40,7 @@ def _visible_text(page, selector: str) -> str:
 
 def _open(page, base_url: str) -> None:
     page.goto(base_url)
-    page.wait_for_function("document.getElementById('model').textContent !== 'loading…'")
+    page.wait_for_selector("#service:not([data-state='loading'])")  # the top bar's Ready / Offline status
     page.wait_for_timeout(800)
 
 
@@ -101,10 +101,31 @@ def main(argv: list[str] | None = None) -> None:
             entry = run_scenario(page, a.base_url, out, name, inp)
             log.append(entry)
             print(json.dumps(entry, ensure_ascii=False)[:300], flush=True)
+        # the theme toggle in the top bar: a person switches the last result to dark
+        page.locator("#theme").click()
+        page.wait_for_timeout(800)
+        page.screenshot(path=out / "08-dark-theme.png", full_page=True)
+        log.append({"scenario": "08-dark-theme", "theme": page.evaluate("document.documentElement.dataset.theme")})
+        page.wait_for_timeout(2000)
         video = Path(page.video.path())
         if a.storage:
             ctx.storage_state(path=a.storage)
+        state = ctx.storage_state()  # this session's history, carried to the smaller screens
         ctx.close()  # finalizes the video
+        # responsive: the same history on a phone and a tablet, the 1-hour talk picked from the history list
+        for name, size, theme in [("09-phone-light", (390, 844), "light"), ("10-phone-dark", (390, 844), "dark"),
+                                  ("11-tablet", (768, 1024), "light")]:
+            small = browser.new_context(viewport={"width": size[0], "height": size[1]}, storage_state=state)
+            sp = small.new_page()
+            _open(sp, f"{a.base_url}/?theme={theme}")
+            sp.locator("#history .row-card").nth(1).click()  # second row: the 1-hour talk
+            sp.wait_for_timeout(600)
+            sp.screenshot(path=out / f"{name}.png", full_page=True)
+            log.append({"scenario": name, "viewport": f"{size[0]}x{size[1]}", "theme": theme,
+                        "headline": sp.locator("#greeting").inner_text(),
+                        "horizontal_overflow_px": sp.evaluate(
+                            "document.documentElement.scrollWidth - document.documentElement.clientWidth")})
+            small.close()
         browser.close()
     shutil.move(video, out / "session.webm")
     shutil.rmtree(out / "_video", ignore_errors=True)

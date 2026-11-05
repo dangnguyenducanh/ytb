@@ -357,7 +357,9 @@ async function submit(body: RequestBody): Promise<void> {
   const status = el("status");
   go.disabled = true;
   show("loading");
-  renderDetails(null); // the details belong to the answer on screen; none while this one is pending or failed
+  // the headline and the details belong to the answer on screen; neither describes an older clip while this one is pending or failed
+  renderTitle(null);
+  renderDetails(null);
   const t0 = performance.now();
   const tick = (): void => {
     status.textContent = `Working… ${Math.round((performance.now() - t0) / 1000)} s. `

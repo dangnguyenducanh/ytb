@@ -2,31 +2,31 @@
   {
     "scenario": "02-captions",
     "input": "https://www.youtube.com/watch?v=arj7oStGLkU",
-    "client_seconds": 3.35,
-    "summary": "Tim Urban wrote a 90-page paper comparing his brain to a non-procrastinator's. He found an MRI lab to compare his brain to a non-procrastinator's. The instant gratification monkey doesn't care about the future, he only cares about easy and fun things. The rational decision-maker knows the future, but he wants to do things that make sense to him right now.",
-    "stats": "Video\narj7oStGLkU\nLanguage\nEnglish\nSource\ncaptions\nParts\n4\nTokens\n2,898 in → 80 out\nServer time\n3.1 s\nModel\nytb-summarizer (fine-tuned)",
+    "client_seconds": 2.84,
+    "summary": "Overview: The text discusses how a writer balances work intensity with strategic planning, highlighting the role of different brain structures in managing time and motivation, and emphasizes the importance of addressing procrastination through goal-setting and prioritization.\n\nKey points:\n- The speaker describes their approach to writing a 90-page senior thesis, balancing light and heavy work throughout the semester.\n- A revised plan was implemented after initial challenges, leading to a successful completion within a tight deadline.\n- The speaker highlights the contrast between the Rational Decision-Maker and the Instant Gratification Monkey in the brain structure.\n- The Dark Playground represents the procrastinator’s struggle between easy and difficult tasks, emphasizing the importance of prioritizing productivity.\n- The speaker describes a scenario where procrastination leads to negative emotions and consequences.\n- The Panic Monster becomes active during critical events like deadlines or emergencies.\n- The Rational Decision-Maker suggests setting goals and planning ahead.\n- The speaker shares a TED Talk example showing how the system works.\n- The speaker concludes by discussing the importance of understanding both types of procrastination.\n\nTakeaway: Understanding the distinction between the Rational Decision-Maker and the Instant Gratification Monkey can help individuals prioritize tasks effectively and avoid negative emotional outcomes.",
+    "stats": "Video\n\nThe clip you sent.\n\nInside the Mind of a Master Procrastinator | Tim Urban | TED\n\nChannel\nTED\nLength\n14 min 03 s\nLanguage\nEnglish\nYour summary\n\nWhat you read instead of watching.\n\nReading time\n1 minute\nWords\n2,250 → 193\nTime saved\n13 min\nHow it was read\n\nWhere the words came from.\n\nSource\nThe video’s captions\nCoverage\n2 parts",
     "error": ""
   },
   {
     "scenario": "03-cached",
     "input": "https://youtu.be/arj7oStGLkU",
-    "client_seconds": 2.83,
-    "summary": "Tim Urban wrote a 90-page paper comparing his brain to a non-procrastinator's. He found an MRI lab to compare his brain to a non-procrastinator's. The instant gratification monkey doesn't care about the future, he only cares about easy and fun things. The rational decision-maker knows the future, but he wants to do things that make sense to him right now.",
-    "stats": "Video\narj7oStGLkU\nLanguage\nEnglish\nSource\ncaptions\nParts\n4\nTokens\n2,898 in → 80 out\nServer time\n2.8 s\nModel\nytb-summarizer (fine-tuned)",
+    "client_seconds": 2.82,
+    "summary": "Overview: The text discusses how a writer balances work intensity with strategic planning, highlighting the role of different brain structures in managing time and motivation, and emphasizes the importance of addressing procrastination through goal-setting and prioritization.\n\nKey points:\n- The speaker describes their approach to writing a 90-page senior thesis, balancing light and heavy work throughout the semester.\n- A revised plan was implemented after initial challenges, leading to a successful completion within a tight deadline.\n- The speaker highlights the contrast between the Rational Decision-Maker and the Instant Gratification Monkey in the brain structure.\n- The Dark Playground represents the procrastinator’s struggle between easy and difficult tasks, emphasizing the importance of prioritizing productivity.\n- The speaker describes a scenario where procrastination leads to negative emotions and consequences.\n- The Panic Monster becomes active during critical events like deadlines or emergencies.\n- The Rational Decision-Maker suggests setting goals and planning ahead.\n- The speaker shares a TED Talk example showing how the system works.\n- The speaker concludes by discussing the importance of understanding both types of procrastination.\n\nTakeaway: Understanding the distinction between the Rational Decision-Maker and the Instant Gratification Monkey can help individuals prioritize tasks effectively and avoid negative emotional outcomes.",
+    "stats": "Video\n\nThe clip you sent.\n\nInside the Mind of a Master Procrastinator | Tim Urban | TED\n\nChannel\nTED\nLength\n14 min 03 s\nLanguage\nEnglish\nYour summary\n\nWhat you read instead of watching.\n\nReading time\n1 minute\nWords\n2,250 → 193\nTime saved\n13 min\nHow it was read\n\nWhere the words came from.\n\nSource\nThe video’s captions\nCoverage\n2 parts",
     "error": ""
   },
   {
     "scenario": "04-long",
     "input": "https://www.youtube.com/watch?v=zjkBMFhNj_g",
-    "client_seconds": 8.85,
-    "summary": "Llama 270B is an open-source model, so we know quite a bit about how it was trained. The training process involves taking a chunk of the internet and compressing it into a zip file. This is essentially a compression of the internet into a single parameter. The neural network is used to predict the next word in a sequence.",
-    "stats": "Video\nzjkBMFhNj_g\nLanguage\nEnglish\nSource\ncaptions\nParts\n14\nTokens\n12,944 in → 71 out\nServer time\n8.8 s\nModel\nytb-summarizer (fine-tuned)",
+    "client_seconds": 6.85,
+    "summary": "Overview: The talk discussed the introduction of large language models (LLMs), their structure, training processes, and capabilities, including their use of massive datasets, parameter compression, and multimodal interactions.\n\nKey points:\n- The talk introduced large language models (LLMs) and their structure.\n- It explained the Llama 270b model, its parameters, and how it works.\n- The model is trained on vast amounts of text and compressed via lossy methods.\n- The neural network predicts the next word in a sequence.\n- The compression and training processes involve massive datasets and GPUs.\n- The neural network learns about the world and compresses knowledge into parameters.\n- It uses inference to generate next words by sampling from the model.\n- The model mimics internet documents but can hallucinate content.\n- The training involves pre-training on internet data and fine-tuning on human-generated Q&A documents.\n- The assistant model is obtained by swapping training data between internet and human-created Q&A datasets.\n- Pre-training involves training on vast amounts of internet content to build foundational knowledge.\n- Fine-tuning adjusts the model using labeled data to improve its ability to answer specific questions.\n- The process iteratively improves the model by comparing and refining outputs based on user feedback.\n- The performance of large language models improves smoothly with increasing parameters and training data.\n- Models can use tools like browsers or calculators to handle complex tasks.\n- Valuation of scale AI is calculated based on historical data ratios.\n- The company expects a valuation of around $2 trillion by 2025.\n- The demonstration shows the integration of multiple tools and technologies.\n- The speaker discusses multimodal capabilities of language models, including image and audio processing.\n- They mention the concept of system one vs. system two thinking, highlighting the difference between quick, instinctive responses and conscious reasoning.\n- The speaker talks about the potential for large language models to improve through self-improvement, similar to alphago's approach in games.\n- The discussion includes examples of how language models can be customized for specific tasks, such as using uploaded files for retrieval.\n- Large language models can handle multiple tasks and become experts in them.\n- They resemble an operating system with a memory hierarchy.\n- They can interact with the web, generate content, and create multimedia.\n- They support various applications and customization options.\n- The analogy shows parallels with modern computing systems.\n- This part discusses various types of attacks targeting large language models, including prompt injection and data poisoning.\n- It highlights examples of such attacks and their potential impact on users.\n- The speaker mentions the importance of defenses against these attacks.\n- The text covers three types of attacks: prompt injection, data poisoning, and backdoor attacks.\n- The speaker concludes by emphasizing the ongoing research and evolution of these threats in the field of large language models.\n\nTakeaway: Large language models can be effectively customized for specific tasks, improving their performance through iterative refinement and evolving capabilities.",
+    "stats": "Video\n\nThe clip you sent.\n\n[1hr Talk] Intro to Large Language Models\n\nChannel\nAndrej Karpathy\nLength\n59 min 50 s\nLanguage\nEnglish\nYour summary\n\nWhat you read instead of watching.\n\nReading time\n2 minutes\nWords\n12,156 → 465\nTime saved\n58 min\nHow it was read\n\nWhere the words came from.\n\nSource\nThe video’s captions\nCoverage\n7 parts",
     "error": ""
   },
   {
     "scenario": "05-invalid",
     "input": "https://vimeo.com/123",
-    "client_seconds": 1.55,
+    "client_seconds": 1.56,
     "summary": "",
     "stats": "",
     "error": "Check the link or text: That is not a YouTube video link.\n\nRetry"
@@ -34,9 +34,34 @@
   {
     "scenario": "06-text",
     "input": "The city of Riverton will replace its entire diesel bus fleet with electric buse…",
-    "client_seconds": 1.54,
-    "summary": "Riverton will replace all its diesel buses with electric ones by 2028. The plan includes new charging depots at three existing garages. The switch will cut the fleet's carbon emissions by about 60 percent.",
-    "stats": "Video\n—\nLanguage\n—\nSource\npasted text\nParts\n1\nTokens\n168 in → 48 out\nServer time\n0.6 s\nModel\nytb-summarizer (fine-tuned)",
+    "client_seconds": 2.32,
+    "summary": "Overview: The city plans to replace all diesel buses with electric ones by 2028, replacing 240 buses and adding new charging depots, costing $310 million with federal grants covering nearly half. The plan aims to reduce emissions by 60% and save $9 million annually, with new buses available next spring.\n\nKey points:\n- The city plans to replace all diesel buses with electric ones by 2028.\n- The replacement includes 240 buses and new charging depots.\n- The cost is estimated at $310 million, with federal grants covering nearly half.\n- The plan aims to cut emissions by 60% and save around $9 million annually.\n- New buses will be available next spring and meet the busiest downtown routes.\n\nTakeaway: The city's bus replacement initiative is expected to significantly lower emissions and improve public transportation efficiency.",
+    "stats": "Text\n\nWhat you pasted.\n\nLength\n137 words\nYour summary\n\nWhat you read instead of watching.\n\nReading time\nunder a minute\nWords\n137 → 131\nHow it was read\n\nWhere the words came from.\n\nSource\nPasted text\nCoverage\nAll at once",
     "error": ""
+  },
+  {
+    "scenario": "08-dark-theme",
+    "theme": "dark"
+  },
+  {
+    "scenario": "09-phone-light",
+    "viewport": "390x844",
+    "theme": "light",
+    "headline": "A 60-minute video, read in 2 minutes.",
+    "horizontal_overflow_px": 0
+  },
+  {
+    "scenario": "10-phone-dark",
+    "viewport": "390x844",
+    "theme": "dark",
+    "headline": "A 60-minute video, read in 2 minutes.",
+    "horizontal_overflow_px": 0
+  },
+  {
+    "scenario": "11-tablet",
+    "viewport": "768x1024",
+    "theme": "light",
+    "headline": "A 60-minute video, read in 2 minutes.",
+    "horizontal_overflow_px": 0
   }
 ]
