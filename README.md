@@ -56,6 +56,7 @@ The script uses the page like a person: it types links, clicks, waits and reads.
 ```bash
 uv run python -m ytb.train --out runs/smoke-model --train-samples 64 --eval-samples 16 --max-steps 20   # smoke: loss falls, prints peak_gpu_gb
 nohup uv run python -m ytb.train --out models/ytb-summarizer > runs/train.log 2>&1 &              # full run, about 40 min
+nohup uv run python scripts/track_training.py --out docs/training/$(date +%F)-ytb-summarizer-progress.md > runs/track.log 2>&1 &   # live progress file
 uv run python -m ytb.evaluate --model Qwen/Qwen3-0.6B --out runs/eval-base.json                     # base-model baseline
 uv run python -m ytb.evaluate --model models/ytb-summarizer                                          # writes models/ytb-summarizer/eval.json
 ```
