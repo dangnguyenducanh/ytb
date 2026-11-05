@@ -1,6 +1,7 @@
 """CNN/DailyMail training examples: prompt-masked labels and caption-style augmentation."""
 
 import random
+import re
 import unicodedata
 
 from datasets import Dataset, load_dataset
@@ -31,7 +32,15 @@ def build_example(tokenizer, article: str, summary: str) -> dict[str, list[int]]
 def load_cnndm(split: str, n: int, seed: int = 0) -> Dataset:
     ds = load_dataset("abisee/cnn_dailymail", data_files={split: f"3.0.0/{split}-*.parquet"}, split=split)
     ds = ds.shuffle(seed=seed).select(range(n)).select_columns(["article", "highlights"])
-    return ds.map(lambda r: {"highlights": r["highlights"].replace("\n", " ")})
+    return ds.map(lambda r: {"highlights": clean_highlights(r["highlights"])})
+
+
+_SPACE_BEFORE_PUNCT = re.compile(r"\s+([.!?,;:])(?=\s|$)")
+
+
+def clean_highlights(text: str) -> str:
+    """CNN/DM highlights are newline bullets with a space before the full stop ('… Monday .'); make them prose."""
+    return _SPACE_BEFORE_PUNCT.sub(r"\1", text.replace("\n", " ")).strip()
 
 
 def prepare(tokenizer, ds: Dataset, augment: bool, seed: int = 0) -> Dataset:
