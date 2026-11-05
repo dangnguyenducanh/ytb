@@ -1,0 +1,32 @@
+[project]
+name = "ytb"
+version = "0.1.0"
+description = "YouTube summarizer: fine-tuned Qwen3-0.6B with a local FastAPI backend and one-page frontend"
+readme = "README.md"
+authors = [
+    { name = "aiface", email = "ducanhdn.ptit@gmail.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "accelerate>=1.15.0",
+    "datasets>=5.1.0",
+    "fastapi>=0.162.0",
+    "faster-whisper>=1.2.1",
+    "nltk>=3.10.4",
+    "pytubefix>=11.2.1",
+    "rouge-score>=0.1.2",
+    "tensorboard>=2.21.0",
+    "torch>=2.15.0",
+    "transformers>=5.22.1",
+    "uvicorn[standard]>=0.54.0",
+    "youtube-transcript-api>=1.2.4",
+]
+
+[build-system]
+requires = ["uv_build>=0.12.23,<0.13.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "playwright>=1.64.1",
+]
