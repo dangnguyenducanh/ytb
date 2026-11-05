@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <!-- the ytb mark: the b is a play button holding the notes (same drawing as the top bar) -->
+  <style>
+    g { fill: #1b6e66; } path { stroke: #1b6e66; }
+    @media (prefers-color-scheme: dark) { g { fill: #4fb3a6; } path { stroke: #4fb3a6; } }
+  </style>
+  <mask id="notes">
+    <rect width="24" height="24" fill="#fff"/>
+    <rect x="9.3" y="13.1" width="5.4" height="1.8" rx="0.9" fill="#000"/>
+    <rect x="9.3" y="16.5" width="3.4" height="1.8" rx="0.9" fill="#000"/>
+  </mask>
+  <g mask="url(#notes)">
+    <rect x="3" y="1.5" width="4.2" height="21" rx="2.1"/>
+    <path d="M7.2 9.2 19.6 15.6 7.2 22Z" stroke-width="2.2" stroke-linejoin="round"/>
+  </g>
+</svg>

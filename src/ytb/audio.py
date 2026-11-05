@@ -18,8 +18,8 @@ def _whisper(size: str, device: str):
 
 def transcribe_audio(
     video_id: str, model_size: str = "small", device: str = "cpu", max_seconds: int = 3600
-) -> tuple[str, str]:
-    """Return (language, text) transcribed locally from the video's audio."""
+) -> tuple[str, str, float]:
+    """Return (language, text, audio length in seconds) transcribed locally from the video's audio."""
     try:
         yt = YouTube(f"https://www.youtube.com/watch?v={video_id}")
         if (yt.length or 0) > max_seconds:
@@ -31,7 +31,7 @@ def transcribe_audio(
             path = stream.download(output_path=tmp, filename=f"{video_id}.m4a")
             segments, info = _whisper(model_size, device).transcribe(path, vad_filter=True)
             text = " ".join(s.text.strip() for s in segments)  # consume the generator before tmp is deleted
-            return info.language, text
+            return info.language, text, info.duration
     except (px.BotDetection, px.PoTokenRequired) as e:
         raise YouTubeBlocked("YouTube is blocking audio downloads from this machine; try again later.") from e
     except px.VideoUnavailable as e:

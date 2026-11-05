@@ -1,9 +1,27 @@
-"""Summarize any length of text: one pass if it fits, else chunk -> summarize -> combine (bounded rounds)."""
+"""Summarize any length of text as structured notes: key points from each part in order, then overview + takeaway.
 
+The notes grow with the input (3-5 points per part) and cover every part, so a long video is not summarized from its
+opening alone. Self-check: `uv run python -m ytb.summarize`.
+"""
+
+import math
+import re
 import threading
 import time
 from collections.abc import Callable
 from dataclasses import dataclass
+
+from ytb.prompt import overview_prompt, part_prompt
+
+_MARK = re.compile(r"^\s*(?:(?:[-*•]\s*)+|\d+[.)]\s+)")  # "- ", "- - ", "* ", "• ", "1. ", "2) "
+
+
+def bullets(reply: str) -> list[str]:
+    """A model reply as clean '- ' bullets: only the marked lines (drops 'Here are the points:'), unless none are."""
+    lines = [line.strip() for line in reply.splitlines() if line.strip()]
+    marked = [line for line in lines if _MARK.match(line)]
+    items = (_MARK.sub("", line).strip() for line in marked or lines)
+    return [f"- {item}" for item in items if item]
 
 
 @dataclass
@@ -13,24 +31,14 @@ class Summary:
     input_tokens: int
     output_tokens: int
     seconds: float
-    chunk_tokens: list[int]  # token count of each first-round window (one entry when it fit in one pass)
-    rounds: int  # combine rounds used (0 = single pass)
+    chunk_tokens: list[int]  # token count of each part
 
 
 class Summarizer:
-    def __init__(
-        self,
-        generate: Callable[[str], str],
-        tokenizer,
-        max_input_tokens: int = 1024,
-        overlap_tokens: int = 100,
-        max_rounds: int = 3,
-    ):
+    def __init__(self, generate: Callable[[str], str], tokenizer, part_tokens: int = 2048):
         self.generate = generate
         self.tokenizer = tokenizer
-        self.max_input_tokens = max_input_tokens
-        self.overlap_tokens = overlap_tokens
-        self.max_rounds = max_rounds
+        self.part_tokens = part_tokens  # ~8 min of speech: base Qwen3-0.6B gives 3-5 concrete points per part
         self._lock = threading.Lock()  # one generation at a time on the GPU
 
     def _encode(self, text: str) -> list:
@@ -39,28 +47,47 @@ class Summarizer:
     def _decode(self, ids: list) -> str:
         return self.tokenizer.decode(ids, skip_special_tokens=True)
 
-    def _windows(self, ids: list) -> list[list]:
-        step = self.max_input_tokens - self.overlap_tokens
-        windows = []
-        for start in range(0, len(ids), step):
-            windows.append(ids[start : start + self.max_input_tokens])
-            if start + self.max_input_tokens >= len(ids):
-                break
-        return windows
+    def _parts(self, ids: list) -> list[list]:
+        """Equal parts of at most part_tokens: no tiny tail part that would pad the notes with filler."""
+        size = max(1, math.ceil(len(ids) / max(1, math.ceil(len(ids) / self.part_tokens))))
+        return [ids[i : i + size] for i in range(0, len(ids), size)] or [ids]
 
     def summarize(self, text: str) -> Summary:
         with self._lock:
             t0 = time.perf_counter()
             ids = self._encode(text)
-            input_tokens, chunks, rounds = len(ids), 1, 0
-            chunk_tokens = [input_tokens]
-            while len(ids) > self.max_input_tokens and rounds < self.max_rounds:
-                windows = self._windows(ids)
-                if rounds == 0:
-                    chunks, chunk_tokens = len(windows), [len(w) for w in windows]
-                ids = self._encode("\n".join(self.generate(self._decode(w)) for w in windows))
-                rounds += 1
-            final_input = text if rounds == 0 and len(ids) <= self.max_input_tokens else self._decode(ids[: self.max_input_tokens])
-            summary = self.generate(final_input)
-            return Summary(summary, chunks, input_tokens, len(self._encode(summary)),
-                           round(time.perf_counter() - t0, 2), chunk_tokens, rounds)
+            parts = self._parts(ids)
+            points = "\n".join(
+                b for i, p in enumerate(parts, 1) for b in bullets(self.generate(part_prompt(self._decode(p), i, len(parts))))
+            )
+            overview, _, takeaway = self.generate(overview_prompt(points)).partition("Takeaway:")
+            overview, takeaway = overview.strip().removeprefix("Overview:").strip(), takeaway.strip()
+            sections = [f"Overview: {overview}" if overview else "", f"Key points:\n{points}" if points else "",
+                        f"Takeaway: {takeaway}" if takeaway else ""]
+            summary = "\n\n".join(s for s in sections if s)
+            return Summary(summary, len(parts), len(ids), len(self._encode(summary)),
+                           round(time.perf_counter() - t0, 2), [len(p) for p in parts])
+
+
+if __name__ == "__main__":
+    assert bullets("Here are the points:\n- - a\n* b\n\n2. c 140GB\n- 2D plot") == ["- a", "- b", "- c 140GB", "- 2D plot"]
+    assert bullets("Plain prose reply.") == ["- Plain prose reply."]
+
+    class Tok:  # one token per word
+        def encode(self, text, add_special_tokens=False):
+            return text.split()
+
+        def decode(self, ids, skip_special_tokens=True):
+            return " ".join(ids)
+
+    prompts = []
+
+    def fake(prompt: str) -> str:
+        prompts.append(prompt)
+        return "Overview: About x.\n\nTakeaway: Do y." if prompt.startswith("Here are the key points") else f"- p{len(prompts)}"
+
+    s = Summarizer(fake, Tok(), part_tokens=4).summarize("w " * 9)
+    assert s.chunks == 3 and s.chunk_tokens == [3, 3, 3], s.chunk_tokens  # 9 tokens, max 4 -> 3 equal parts, no tail
+    assert s.text == "Overview: About x.\n\nKey points:\n- p1\n- p2\n- p3\n\nTakeaway: Do y.", s.text
+    assert "part 3 of 3" in prompts[2] and "- p3" in prompts[3]  # every part is read, and all points reach the overview
+    print("summarize self-check ok")

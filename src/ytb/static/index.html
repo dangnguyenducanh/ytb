@@ -3,7 +3,16 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ytb · video summaries</title>
+<meta name="color-scheme" content="light dark">
+<title>ytb · YouTube video summarizer</title>
+<link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+<script>
+  // the theme before first paint: ?theme=light|dark (a preview, not saved), else the saved choice, else the system's
+  try {
+    const t = new URLSearchParams(location.search).get("theme") || localStorage.getItem("ytb.theme");
+    if (t === "light" || t === "dark") document.documentElement.dataset.theme = t;
+  } catch (e) { /* storage blocked: follow the system */ }
+</script>
 <link rel="preload" href="/static/fonts/InstrumentSans.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/static/fonts/InstrumentSerif.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/static/app.css">
@@ -13,33 +22,38 @@
 <header class="topbar">
   <div class="topbar-left">
     <a class="brand" href="/" aria-label="ytb, home">
-      <!-- the mark: a play triangle becoming lines of text (video in, summary out) -->
+      <!-- the mark: the b of ytb is a play button, holding the notes the video becomes (also /static/favicon.svg) -->
       <svg class="mark" viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M2 5.5v13l9-6.5z" fill="currentColor"/>
-        <rect x="13" y="6" width="9" height="2.4" rx="1.2" fill="currentColor"/>
-        <rect x="13" y="10.8" width="9" height="2.4" rx="1.2" fill="currentColor"/>
-        <rect x="13" y="15.6" width="6" height="2.4" rx="1.2" fill="currentColor"/>
+        <mask id="mark-notes">
+          <rect width="24" height="24" fill="#fff"/>
+          <rect x="9.3" y="13.1" width="5.4" height="1.8" rx="0.9" fill="#000"/>
+          <rect x="9.3" y="16.5" width="3.4" height="1.8" rx="0.9" fill="#000"/>
+        </mask>
+        <g fill="currentColor" mask="url(#mark-notes)">
+          <rect x="3" y="1.5" width="4.2" height="21" rx="2.1"/>
+          <path d="M7.2 9.2 19.6 15.6 7.2 22Z" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/>
+        </g>
       </svg>
       <span class="wordmark">ytb</span>
     </a>
-    <span class="crumb">Summaries</span>
+    <span class="app-title">YouTube video summarizer</span>
   </div>
   <div class="topbar-right">
-    <div id="model-chip" class="model-chip" data-state="loading" title="The model serving this page">
-      <span class="dot" aria-hidden="true"></span>
-      <span id="model">loading…</span>
-      <span id="model-kind" class="chip-meta"></span>
-      <span id="model-score" class="chip-meta chip-score num" hidden></span>
-    </div>
-    <a class="top-link" href="/docs" target="_blank" rel="noopener">API</a>
+    <button id="theme" class="theme-toggle" type="button" aria-label="Switch to dark theme" title="Switch to dark theme">
+      <svg id="icon-moon" viewBox="0 0 20 20" aria-hidden="true"><path d="M16.5 12.4A7 7 0 0 1 7.6 3.5a7 7 0 1 0 8.9 8.9Z"/></svg>
+      <svg id="icon-sun" viewBox="0 0 20 20" aria-hidden="true" hidden><circle cx="10" cy="10" r="3.4"/><path d="M10 1.8v2.1M10 16.1v2.1M1.8 10h2.1M16.1 10h2.1M4.2 4.2l1.5 1.5M14.3 14.3l1.5 1.5M4.2 15.8l1.5-1.5M14.3 5.7l1.5-1.5"/></svg>
+    </button>
+    <span id="service" class="service" data-state="loading" role="status">
+      <span class="dot" aria-hidden="true"></span><span id="service-text">Starting…</span>
+    </span>
   </div>
 </header>
 
 <main class="sheet">
   <div class="column">
     <section class="title-row">
-      <h1 id="greeting">Nothing read yet.</h1>
-      <p class="lede" id="lede">Paste a YouTube link. Captions are used when a video has them; otherwise its audio is transcribed on this machine.</p>
+      <h1 id="greeting">Any YouTube video, read in a minute.</h1>
+      <p class="lede" id="lede">Paste a link. Captions are used when a video has them; otherwise its audio is transcribed on this machine.</p>
     </section>
 
     <form id="form" class="composer" autocomplete="off">
@@ -58,11 +72,11 @@
       </div>
     </form>
 
-    <section class="tiles" aria-label="Counts for this browser">
-      <div class="tile"><span class="tile-label">Tokens read</span><span class="tile-value num" id="t-tokens-value">0</span><span class="tile-cap" id="t-tokens-cap"></span></div>
-      <div class="tile"><span class="tile-label">Model time</span><span class="tile-value num" id="t-time-value">0 s</span><span class="tile-cap" id="t-time-cap"></span></div>
-      <div class="tile"><span class="tile-label">Parts summarized</span><span class="tile-value num" id="t-parts-value">0</span><span class="tile-cap" id="t-parts-cap"></span></div>
-      <div class="tile"><span class="tile-label">Local transcriptions</span><span class="tile-value num" id="t-whisper-value">0</span><span class="tile-cap" id="t-whisper-cap"></span></div>
+    <section class="tiles" aria-label="What this browser's summaries saved you">
+      <div class="tile"><span class="tile-label">Time saved</span><span class="tile-value num" id="t-saved-value">0 min</span><span class="tile-cap" id="t-saved-cap"></span></div>
+      <div class="tile"><span class="tile-label">Video covered</span><span class="tile-value num" id="t-watch-value">0 min</span><span class="tile-cap" id="t-watch-cap"></span></div>
+      <div class="tile"><span class="tile-label">Words read for you</span><span class="tile-value num" id="t-words-value">0</span><span class="tile-cap" id="t-words-cap"></span></div>
+      <div class="tile"><span class="tile-label">Faster than watching</span><span class="tile-value num" id="t-speed-value">—</span><span class="tile-cap" id="t-speed-cap"></span></div>
     </section>
 
     <section class="row r-9-3">
@@ -87,32 +101,26 @@
               <p id="summary" class="summary-text"></p>
             </div>
           </div>
-          <figure class="strip-fig">
-            <div id="strip" class="strip" role="img" aria-label="How the transcript was split into parts"></div>
+          <figure id="strip-fig" class="strip-fig">
+            <div id="strip" class="strip" role="img" aria-label="The parts of the video the key points come from"></div>
             <figcaption id="strip-cap" class="strip-cap"></figcaption>
           </figure>
         </div>
       </article>
       <aside class="panel" aria-labelledby="details-h">
-        <header class="panel-head"><h2 id="details-h">Run details</h2></header>
-        <p id="stats-empty" class="empty">Filled in after a run.</p>
-        <dl id="stats" class="kv" hidden></dl>
+        <header class="panel-head"><h2 id="details-h">About this video</h2></header>
+        <p id="stats-empty" class="empty">The video’s title, length and the time you save show here after a summary.</p>
+        <div id="stats" class="kv-groups" hidden></div>
       </aside>
     </section>
 
-    <section class="row r-6-6">
-      <article class="panel" aria-labelledby="hist-h">
-        <header class="panel-head">
-          <h2 id="hist-h">This browser <span id="hist-count" class="count num">0</span></h2>
-          <button id="clear" class="text-action" type="button" hidden>Clear</button>
-        </header>
-        <ul id="history" class="rows"></ul>
-      </article>
-      <article class="panel" aria-labelledby="cmp-h">
-        <header class="panel-head"><h2 id="cmp-h">Base vs fine-tuned</h2></header>
-        <div id="compare"></div>
-      </article>
-    </section>
+    <article class="panel" aria-labelledby="hist-h">
+      <header class="panel-head">
+        <h2 id="hist-h">Recent summaries <span id="hist-count" class="count num">0</span></h2>
+        <button id="clear" class="text-action" type="button" hidden>Clear</button>
+      </header>
+      <ul id="history" class="rows"></ul>
+    </article>
   </div>
 </main>
 <noscript><p class="noscript">This page needs JavaScript to call the summarizer.</p></noscript>

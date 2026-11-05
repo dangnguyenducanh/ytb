@@ -38,6 +38,7 @@ class Transcript:
     language: str
     text: str
     source: str  # "captions" | "whisper"
+    duration: float | None = None  # video length in seconds; None for transcripts cached before it was recorded
 
 
 _ID = re.compile(r"[A-Za-z0-9_-]{11}")
@@ -67,7 +68,7 @@ def parse_video_id(url: str) -> str:
 
 
 def fetch_transcript(
-    video_id: str, cache_dir: Path, fallback: Callable[[str], tuple[str, str]] | None = None
+    video_id: str, cache_dir: Path, fallback: Callable[[str], tuple[str, str, float]] | None = None
 ) -> Transcript:
     path = Path(cache_dir) / f"{video_id}.json"
     if path.exists():
@@ -102,14 +103,15 @@ def _from_captions(video_id: str) -> Transcript | None:
     text = " ".join(_CUE.sub(" ", " ".join(s.text for s in fetched.snippets)).split())
     if not text:
         raise NoTranscript("This video's captions contain no speech.")
-    return Transcript(video_id, fetched.language_code, text, "captions")
+    last = fetched.snippets[-1]  # the last caption ends about where the talking ends
+    return Transcript(video_id, fetched.language_code, text, "captions", round(last.start + last.duration, 1))
 
 
-def _from_audio(video_id: str, fallback: Callable[[str], tuple[str, str]] | None) -> Transcript:
+def _from_audio(video_id: str, fallback: Callable[[str], tuple[str, str, float]] | None) -> Transcript:
     if fallback is None:
         raise NoTranscript("This video has no captions.")
-    language, text = fallback(video_id)
+    language, text, duration = fallback(video_id)
     text = " ".join(text.split())
     if not text:
         raise NoTranscript("No speech found in this video's audio.")
-    return Transcript(video_id, language, text, "whisper")
+    return Transcript(video_id, language, text, "whisper", round(duration, 1))

@@ -1,9 +1,9 @@
 # ytb — YouTube summarizer with a fine-tuned Qwen3-0.6B
 
-Paste a YouTube link into a local web page and get a 3–4 sentence summary written by `Qwen/Qwen3-0.6B`. That is either the base model or a version fully fine-tuned here on CNN/DailyMail.
+Paste a YouTube link into a local web page and get structured notes written by `Qwen/Qwen3-0.6B`: an overview, key points in the order the video covers them, and a takeaway. The notes grow with the video (3–5 points per ~8 minutes of speech). The repo also fine-tunes the model on CNN/DailyMail, but that fine-tune only writes 3–4 sentences of news-style prose and ignores the structured prompts.
 
 - **Ingestion:** uses the video's captions, preferring English. Videos with no captions are downloaded with `pytubefix` (no `yt-dlp`) and transcribed locally with `faster-whisper`. Transcripts are cached in `.cache/transcripts/`.
-- **Long videos:** split into 1,024-token chunks, each chunk summarized, then the results combined.
+- **Long videos:** split into equal parts of up to 2,048 tokens. Each part gives 3–5 key points, all kept in order, and the overview and takeaway are written from those points. Prompts are in `src/ytb/prompt.py`; training and ROUGE keep the CNN/DM prompt.
 - **Backend:** FastAPI. **Frontend:** one static page with no build step and no CDN. Both are served on `http://127.0.0.1:18500`.
 - **Docs:** spec in `docs/superpowers/specs/2026-11-05-ytb-summarization-e2e.md`, plan in `docs/superpowers/plans/`.
 
@@ -17,15 +17,15 @@ uv run playwright install chromium   # only for the manual-session recorder
 ## Serve
 
 ```bash
-uv run python -m ytb.api --model models/ytb-summarizer   # fine-tuned (after training)
-uv run python -m ytb.api --model Qwen/Qwen3-0.6B         # base model
+uv run python -m ytb.api                                 # base Qwen3-0.6B: structured notes
+uv run python -m ytb.api --model models/ytb-summarizer   # CNN/DM fine-tune: short prose, ignores the structure
 ```
 
 Then open http://127.0.0.1:18500.
 
 | Flag | Default | Meaning |
 |---|---|---|
-| `--model` | `models/ytb-summarizer` | HF model folder or Hub id |
+| `--model` | `Qwen/Qwen3-0.6B` | HF model folder or Hub id |
 | `--device` | `cuda` if available | `cuda` or `cpu` for the summarizer |
 | `--host` / `--port` | `127.0.0.1` / `18500` | bind address |
 | `--cache-dir` | `.cache/transcripts` | transcript cache |
@@ -34,7 +34,8 @@ Then open http://127.0.0.1:18500.
 
 **API**
 - `GET /api/health` returns `{status, model}`.
-- `POST /api/summarize` takes `{"url": …}` or `{"text": …}` and returns `{summary, video_id, language, source, chunks, input_tokens, output_tokens, seconds, model}`.
+- `POST /api/summarize` takes `{"url": …}` or `{"text": …}` and returns `{summary, title, channel, duration, words_in, words_out, video_id, language, source, chunks, chunk_tokens, input_tokens, output_tokens, seconds, model}`. `summary` is plain text: `Overview: …`, `Key points:` with `- ` lines, `Takeaway: …`. `title` and `channel` come from YouTube's oEmbed endpoint (null when it cannot be reached); `duration` is the video's length in seconds from the captions or the audio (null for transcripts cached before it was recorded).
+- The page follows the system's light or dark theme; the sun/moon button in the top bar switches it and remembers the choice, and `?theme=light|dark` previews one without saving it.
 - Errors:
   - 422: bad input
   - 404: unavailable video, or no captions or audio

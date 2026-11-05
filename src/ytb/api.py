@@ -4,8 +4,11 @@ import argparse
 import functools
 import json
 import logging
+import re
+import urllib.request
 from collections.abc import Callable
 from pathlib import Path
+from urllib.parse import urlencode
 
 import uvicorn
 from fastapi import FastAPI, HTTPException
@@ -34,6 +37,22 @@ _PAGE = Path(__file__).parent / "static" / "index.html"
 class SummarizeRequest(BaseModel):
     url: str | None = None
     text: str | None = None
+
+
+@functools.lru_cache(maxsize=256)
+def video_info(video_id: str) -> dict:
+    """Title and channel from YouTube's oEmbed endpoint (no API key); {} when it cannot be reached."""
+    url = "https://www.youtube.com/oembed?" + urlencode({"url": f"https://www.youtube.com/watch?v={video_id}"})
+    try:
+        with urllib.request.urlopen(url, timeout=3) as r:
+            d = json.load(r)
+        return {"title": d.get("title"), "channel": d.get("author_name")}
+    except (OSError, ValueError):  # offline, blocked, private video: the page falls back to the thumbnail
+        return {}
+
+
+def words(text: str) -> int:
+    return len(re.findall(r"\w[\w'’-]*", text))
 
 
 def create_app(summarizer: Summarizer, fetch: Callable[[str], Transcript], model_name: str) -> FastAPI:
@@ -65,14 +84,19 @@ def create_app(summarizer: Summarizer, fetch: Callable[[str], Transcript], model
         if len(text) > MAX_CHARS:
             raise HTTPException(413, f"The text is {len(text):,} characters; the limit is {MAX_CHARS:,}.")
         s = summarizer.summarize(text)
+        info = video_info(transcript.video_id) if transcript else {}
         return {
             "summary": s.text,
+            "title": info.get("title"),
+            "channel": info.get("channel"),
+            "duration": transcript.duration if transcript else None,  # seconds of video, when known
+            "words_in": words(text),
+            "words_out": words(s.text),
             "video_id": transcript.video_id if transcript else None,
             "language": transcript.language if transcript else None,
             "source": transcript.source if transcript else None,
             "chunks": s.chunks,
             "chunk_tokens": s.chunk_tokens,
-            "rounds": s.rounds,
             "input_tokens": s.input_tokens,
             "output_tokens": s.output_tokens,
             "seconds": s.seconds,
@@ -84,7 +108,8 @@ def create_app(summarizer: Summarizer, fetch: Callable[[str], Transcript], model
 
 def main(argv: list[str] | None = None) -> None:
     p = argparse.ArgumentParser(description="Serve the ytb summarizer (backend + frontend).")
-    p.add_argument("--model", default="models/ytb-summarizer", help="HF model folder or Hub id")
+    # Base model by default: the CNN/DM fine-tune ignores the structured prompts and writes 3-4 sentences of prose.
+    p.add_argument("--model", default="Qwen/Qwen3-0.6B", help="HF model folder or Hub id")
     p.add_argument("--device", default=None, help="cuda or cpu (default: cuda if available)")
     p.add_argument("--host", default="127.0.0.1")
     p.add_argument("--port", type=int, default=18500)
@@ -96,8 +121,9 @@ def main(argv: list[str] | None = None) -> None:
 
     from ytb.audio import transcribe_audio
     from ytb.model import load
+    from ytb.prompt import SERVE_GENERATION, chat
 
-    generate, tok = load(a.model, a.device)
+    generate, tok = load(a.model, a.device, prompt=chat, generation=SERVE_GENERATION)
     fallback = functools.partial(transcribe_audio, model_size=a.whisper_model, device=a.whisper_device)
     fetch = functools.partial(fetch_transcript, cache_dir=Path(a.cache_dir), fallback=fallback)
     uvicorn.run(create_app(Summarizer(generate, tok), fetch, a.model), host=a.host, port=a.port)
